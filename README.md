@@ -10,6 +10,6 @@ To use this library please add it as your gradle/maven dependency with [these re
 
 ```groovy
 dependencies {
-    implementation 'com.lifeinide.jsonql:jsonql-jpa:VERSION'
+    implementation 'com.lifeinide.jsonql:jsonql-mongo:VERSION'
 }
 ```
