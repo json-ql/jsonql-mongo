@@ -74,10 +74,11 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'com.lifeinide.jsonql', name: 'jsonql-core', version: property('vJsonqlCore')
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: property('vSlf4j')
+    compile group: 'com.lifeinide.jsonql', name: 'jsonql-core', version: property('vJsonqlCore')
+    compile group: 'org.slf4j', name: 'slf4j-api', version: property('vSlf4j')
+    compile group: 'org.mongodb', name: 'mongo-java-driver', version: property('vMongo')
 
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: property('vJunit')
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: property('vJunit')
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: property('vJunit')
     testRuntimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: property('vLogback')
 }
