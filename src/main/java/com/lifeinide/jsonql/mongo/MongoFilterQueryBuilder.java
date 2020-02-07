@@ -1,21 +1,26 @@
 package com.lifeinide.jsonql.mongo;
 
 import com.lifeinide.jsonql.core.BaseFilterQueryBuilder;
+import com.lifeinide.jsonql.core.dto.BasePageableRequest;
 import com.lifeinide.jsonql.core.dto.Page;
 import com.lifeinide.jsonql.core.filters.*;
 import com.lifeinide.jsonql.core.intr.FilterQueryBuilder;
 import com.lifeinide.jsonql.core.intr.Pageable;
 import com.lifeinide.jsonql.core.intr.QueryFilter;
 import com.lifeinide.jsonql.core.intr.Sortable;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link FilterQueryBuilder} with {@link MongoCollection}.
@@ -110,13 +115,34 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 		return this;
 	}
 
+	@SuppressWarnings({"ConstantConditions", "unchecked"})
 	@Nonnull
 	@Override
 	public P list(@Nullable Pageable pageable, @Nullable Sortable<?> sortable) {
-		// TODOLF impl MongoFilterQueryBuilder.list
-		return null;
+		if (pageable==null)
+			pageable = BasePageableRequest.ofUnpaged();
+		if (sortable==null)
+			sortable = BasePageableRequest.ofUnpaged();
+
+		Bson filter = build(pageable, sortable);
+		if (filter.equals(EMPTY_BSON))
+			filter = null;
+
+		long count = context.getCollection().countDocuments(filter);
+		FindIterable<E> iterable = context.getCollection().find(filter);
+
+		if (pageable.isPaged()) {
+			iterable.skip(pageable.getOffset());
+			iterable.limit(pageable.getPageSize());
+		}
+
+		List<Bson> sorts = sortable.getSort().stream()
+			.map(sort -> sort.isDesc() ? Sorts.descending(sort.getSortField()) : Sorts.ascending(sort.getSortField()))
+			.collect(Collectors.toList());
+		if (!sorts.isEmpty())
+			iterable.sort(Sorts.orderBy(sorts));
+
+		return (P) buildPageableResult(pageable.getPageSize(), pageable.getPage(), count, iterable.into(new ArrayList<>()));
 	}
 
-	
-	
 }
