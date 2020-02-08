@@ -13,6 +13,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -36,8 +37,8 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 
 	protected MongoFilterQueryBuilderContext<E> context;
 
-	public MongoFilterQueryBuilder(MongoFilterQueryBuilderContext<E> context) {
-		this.context = context;
+	public MongoFilterQueryBuilder(MongoCollection<E> collection) {
+		this.context = new MongoFilterQueryBuilderContext<>(collection);
 	}
 
 	@Nonnull
@@ -154,6 +155,9 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 	@Nonnull
 	@Override
 	public MongoFilterQueryBuilder<E, P> add(@Nonnull String field, @Nullable EntityQueryFilter<?> filter) {
+		if (filter==null)
+			return this;
+
 		throw new IllegalStateException("Not implemented, use for example SingleValueQueryFilter<ObjectId> instead.");
 	}
 
@@ -193,7 +197,7 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 		return this;
 	}
 
-	@SuppressWarnings({"ConstantConditions", "unchecked"})
+	@SuppressWarnings({"unchecked"})
 	@Nonnull
 	@Override
 	public P list(@Nullable Pageable pageable, @Nullable Sortable<?> sortable) {
@@ -204,7 +208,7 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 
 		Bson filter = build(pageable, sortable);
 		if (filter.equals(EMPTY_BSON))
-			filter = null;
+			filter = new BsonDocument();
 
 		long count = context.getCollection().countDocuments(filter);
 		FindIterable<E> iterable = context.getCollection().find(filter);
