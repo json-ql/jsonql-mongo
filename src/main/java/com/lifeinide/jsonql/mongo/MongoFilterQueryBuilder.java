@@ -47,35 +47,41 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 		return context;
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	@Nonnull
 	@Override
 	public MongoFilterQueryBuilder<E, P> add(@Nonnull String field, @Nullable SingleValueQueryFilter<?> filter) {
 		if (filter!=null) {
 
+			// forcefully convert enums to strings due to https://jira.mongodb.org/browse/JAVA-2720 (not fixed at the moment)
+			Object value = filter.getValue();
+			if (value!=null && value.getClass().isEnum())
+				value = value.toString();
+
 			switch (filter.getCondition()) {
 
 				case eq:
-					context.getFilters().add(Filters.eq(field, filter.getValue()));
+					context.getFilters().add(Filters.eq(field, value));
 					break;
 
 				case ne:
-					context.getFilters().add(Filters.ne(field, filter.getValue()));
+					context.getFilters().add(Filters.ne(field, value));
 					break;
 
 				case gt:
-					context.getFilters().add(Filters.gt(field, filter.getValue()));
+					context.getFilters().add(Filters.gt(field, value));
 					break;
 
 				case ge:
-					context.getFilters().add(Filters.gte(field, filter.getValue()));
+					context.getFilters().add(Filters.gte(field, value));
 					break;
 
 				case lt:
-					context.getFilters().add(Filters.lt(field, filter.getValue()));
+					context.getFilters().add(Filters.lt(field, value));
 					break;
 
 				case le:
-					context.getFilters().add(Filters.lte(field, filter.getValue()));
+					context.getFilters().add(Filters.lte(field, value));
 					break;
 
 				case isNull:
