@@ -4,11 +4,11 @@ import com.lifeinide.jsonql.core.dto.Page;
 import com.lifeinide.jsonql.core.test.JsonQLBaseQueryBuilderTest;
 import com.lifeinide.jsonql.mongo.DefaultMongoFilterQueryBuilder;
 import com.lifeinide.jsonql.mongo.MongoFilterQueryBuilder;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
+import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.internal.connection.ServerAddressHelper;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -56,8 +56,8 @@ public class MongoQueryBuilderTest extends JsonQLBaseQueryBuilderTest<
 		MongodProcess mongod = mongodExecutable.start();
 		MongoClientSettings settings = null;
 
-		MongoClient mongo = new MongoClient(ServerAddressHelper.createServerAddress(bindIp, port),
-			MongoClientOptions.builder()
+		MongoClient mongo = MongoClients.create(MongoClientSettings.builder()
+				.applyConnectionString(new ConnectionString("mongodb://" + bindIp + ":" + port))
 				.codecRegistry(fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
 					fromProviders(PojoCodecProvider.builder().automatic(true).build())))
 				.build());
