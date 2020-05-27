@@ -227,6 +227,8 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 		List<Bson> sorts = sortable.getSort().stream()
 			.map(sort -> sort.isDesc() ? Sorts.descending(sort.getSortField()) : Sorts.ascending(sort.getSortField()))
 			.collect(Collectors.toList());
+		if (sorts.isEmpty())
+			sorts = context.getSorts();
 		if (!sorts.isEmpty())
 			iterable.sort(Sorts.orderBy(sorts));
 

@@ -1,5 +1,6 @@
 package com.lifeinide.jsonql.mongo.test;
 
+import com.lifeinide.jsonql.core.dto.BasePageableRequest;
 import com.lifeinide.jsonql.core.dto.Page;
 import com.lifeinide.jsonql.core.test.JsonQLBaseQueryBuilderTest;
 import com.lifeinide.jsonql.mongo.DefaultMongoFilterQueryBuilder;
@@ -9,6 +10,7 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Sorts;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -20,10 +22,13 @@ import de.flapdoodle.embed.process.runtime.Network;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.function.BiConsumer;
 
 import static org.bson.codecs.configuration.CodecRegistries.*;
@@ -91,6 +96,17 @@ public class MongoQueryBuilderTest extends JsonQLBaseQueryBuilderTest<
 	@Override
 	protected void doTest(BiConsumer<MongoCollection<MongoEntity>, MongoFilterQueryBuilder<MongoEntity, Page<MongoEntity>>> c) {
 		c.accept(collection, new DefaultMongoFilterQueryBuilder<>(collection));
+	}
+
+	@Test
+	public void testDefaultSortOrder() {
+		doTest((pc, qb) -> {
+			qb.context().getSorts().add(Sorts.descending("dateVal"));
+			Assertions.assertEquals(LocalDate.of(2018, 4, 10), qb
+				.list(BasePageableRequest.ofDefault().withPageSize(1))
+				.getData().iterator().next().getDateVal());
+		});
+
 	}
 
 }

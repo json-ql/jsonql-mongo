@@ -4,6 +4,7 @@ import com.lifeinide.jsonql.core.BaseQueryBuilderContext;
 import com.mongodb.client.MongoCollection;
 import org.bson.conversions.Bson;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -15,20 +16,25 @@ import java.util.Stack;
  */
 public class MongoFilterQueryBuilderContext<E> extends BaseQueryBuilderContext {
 
-	protected MongoCollection<E> collection;
-	protected Stack<List<Bson>> filters = new Stack<>();
+	@Nonnull protected MongoCollection<E> collection;
+	@Nonnull protected Stack<List<Bson>> filters = new Stack<>();
+	@Nonnull protected List<Bson> sorts = new ArrayList<>(); // allows to define default sorts if Sortable.sorts are not provided in a request
 
-	public MongoFilterQueryBuilderContext(MongoCollection<E> collection) {
+	public MongoFilterQueryBuilderContext(@Nonnull MongoCollection<E> collection) {
 		this.collection = collection;
 		this.filters.push(new ArrayList<>());
 	}
 
-	public MongoCollection<E> getCollection() {
+	@Nonnull public MongoCollection<E> getCollection() {
 		return collection;
 	}
 
-	public List<Bson> getFilters() {
+	@Nonnull public List<Bson> getFilters() {
 		return filters.peek();
+	}
+
+	@Nonnull public List<Bson> getSorts() {
+		return sorts;
 	}
 
 	List<Bson> doWithNewFilters(Runnable r) {
