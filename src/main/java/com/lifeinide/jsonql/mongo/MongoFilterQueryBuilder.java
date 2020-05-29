@@ -203,7 +203,7 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 		return this;
 	}
 
-	@SuppressWarnings({"unchecked"})
+	@SuppressWarnings({"unchecked", "ConstantConditions"})
 	@Nonnull
 	@Override
 	public P list(@Nullable Pageable pageable, @Nullable Sortable<?> sortable) {
@@ -221,8 +221,9 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 
 		if (pageable.isPaged()) {
 			iterable.skip(pageable.getOffset());
-			iterable.limit(pageable.getPageSize());
-		}
+			iterable.limit(getPageSize(pageable));
+		} else if (maxResults!=null)
+			iterable.limit(maxResults);
 
 		List<Bson> sorts = sortable.getSort().stream()
 			.map(sort -> sort.isDesc() ? Sorts.descending(sort.getSortField()) : Sorts.ascending(sort.getSortField()))
@@ -232,7 +233,7 @@ extends BaseFilterQueryBuilder<E, P, Bson, MongoFilterQueryBuilderContext<E>, Mo
 		if (!sorts.isEmpty())
 			iterable.sort(Sorts.orderBy(sorts));
 
-		return (P) buildPageableResult(pageable.getPageSize(), pageable.getPage(), count, iterable.into(new ArrayList<>()));
+		return (P) buildPageableResult(getPageSize(pageable), pageable.getPage(), count, iterable.into(new ArrayList<>()));
 	}
 
 }
